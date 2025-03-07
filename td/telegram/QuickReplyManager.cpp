@@ -269,7 +269,7 @@ class QuickReplyManager::SendQuickReplyMessageQuery final : public Td::ResultHan
             false /*ignored*/, false /*ignored*/, false /*ignored*/,
             telegram_api::make_object<telegram_api::inputPeerSelf>(), std::move(reply_to), message_text->text,
             m->random_id, nullptr, std::move(entities), 0, nullptr,
-            td_->quick_reply_manager_->get_input_quick_reply_shortcut(m->shortcut_id), 0),
+            td_->quick_reply_manager_->get_input_quick_reply_shortcut(m->shortcut_id), 0, 0),
         {{"me"}}));
   }
 
@@ -319,7 +319,7 @@ class QuickReplyManager::SendQuickReplyInlineMessageQuery final : public Td::Res
             flags, false /*ignored*/, false /*ignored*/, false /*ignored*/, false /*ignored*/,
             telegram_api::make_object<telegram_api::inputPeerSelf>(), std::move(reply_to), m->random_id,
             m->inline_query_id, m->inline_result_id, 0, nullptr,
-            td_->quick_reply_manager_->get_input_quick_reply_shortcut(m->shortcut_id)),
+            td_->quick_reply_manager_->get_input_quick_reply_shortcut(m->shortcut_id), 0),
         {{"me"}}));
   }
 
@@ -393,7 +393,7 @@ class QuickReplyManager::SendQuickReplyMediaQuery final : public Td::ResultHandl
             false /*ignored*/, false /*ignored*/, telegram_api::make_object<telegram_api::inputPeerSelf>(),
             std::move(reply_to), std::move(input_media), message_text == nullptr ? string() : message_text->text,
             m->random_id, nullptr, std::move(entities), 0, nullptr,
-            td_->quick_reply_manager_->get_input_quick_reply_shortcut(m->shortcut_id), 0),
+            td_->quick_reply_manager_->get_input_quick_reply_shortcut(m->shortcut_id), 0, 0),
         {{"me"}}));
   }
 
@@ -564,7 +564,7 @@ class QuickReplyManager::SendQuickReplyMultiMediaQuery final : public Td::Result
             vector<int64> &&random_ids, vector<FileId> &&file_ids, vector<FileId> &&cover_file_ids,
             vector<tl_object_ptr<telegram_api::inputSingleMedia>> &&input_single_media) {
     for (auto &single_media : input_single_media) {
-      CHECK(FileManager::extract_was_uploaded(single_media->media_) == false);
+      CHECK(!FileManager::extract_was_uploaded(single_media->media_));
       file_references_.push_back(FileManager::extract_file_reference(single_media->media_));
       cover_file_references_.push_back(FileManager::extract_cover_file_reference(single_media->media_));
     }
@@ -589,7 +589,7 @@ class QuickReplyManager::SendQuickReplyMultiMediaQuery final : public Td::Result
             flags, false /*ignored*/, false /*ignored*/, false /*ignored*/, false /*ignored*/, false /*ignored*/,
             false /*ignored*/, false /*ignored*/, telegram_api::make_object<telegram_api::inputPeerSelf>(),
             std::move(reply_to), std::move(input_single_media), 0, nullptr,
-            td_->quick_reply_manager_->get_input_quick_reply_shortcut(shortcut_id_), 0),
+            td_->quick_reply_manager_->get_input_quick_reply_shortcut(shortcut_id_), 0, 0),
         {{"me"}}));
   }
 
@@ -1228,7 +1228,7 @@ td_api::object_ptr<td_api::MessageSendingState> QuickReplyManager::get_message_s
         can_retry && error_code == 400 && m->send_error_message == CSlice("QUOTE_TEXT_INVALID");
     return td_api::make_object<td_api::messageSendingStateFailed>(
         td_api::make_object<td_api::error>(error_code, m->send_error_message), can_retry, false,
-        need_another_reply_quote, false, max(m->try_resend_at - Time::now(), 0.0));
+        need_another_reply_quote, false, 0, max(m->try_resend_at - Time::now(), 0.0));
   }
   return nullptr;
 }

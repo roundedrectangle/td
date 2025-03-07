@@ -159,10 +159,10 @@ OptionManager::OptionManager(Td *td)
   set_default_integer_option("fact_check_length_max", 1024);
   set_default_integer_option("star_withdrawal_count_min", is_test_dc ? 10 : 1000);
   set_default_integer_option("story_link_area_count_max", 3);
-  set_default_integer_option("paid_media_message_star_count_max", 2500);
+  set_default_integer_option("paid_media_message_star_count_max", 10000);
   set_default_integer_option("bot_media_preview_count_max", 12);
-  set_default_integer_option("paid_reaction_star_count_max", 2500);
-  set_default_integer_option("subscription_star_count_max", 2500);
+  set_default_integer_option("paid_reaction_star_count_max", 10000);
+  set_default_integer_option("subscription_star_count_max", 10000);
   set_default_integer_option("usd_to_thousand_star_rate", 1410);
   set_default_integer_option("thousand_star_to_usd_rate", 1300);
   set_default_integer_option("gift_text_length_max", 128);
@@ -170,6 +170,9 @@ OptionManager::OptionManager(Td *td)
   set_default_integer_option("affiliate_program_commission_per_mille_min", 1);
   set_default_integer_option("affiliate_program_commission_per_mille_max", 800);
   set_default_integer_option("bot_verification_custom_description_length_max", 70);
+  set_default_integer_option("paid_message_star_count_max", 10000);
+  set_default_integer_option("paid_message_earnings_per_mille", 850);
+  set_default_integer_option("pinned_gift_count_max", 6);
 
   if (options.isset("my_phone_number") || !options.isset("my_id")) {
     update_premium_options();
@@ -720,7 +723,7 @@ td_api::object_ptr<td_api::OptionValue> OptionManager::get_option_synchronously(
       break;
     case 'v':
       if (name == "version") {
-        return td_api::make_object<td_api::optionValueString>("1.8.45");
+        return td_api::make_object<td_api::optionValueString>("1.8.46");
       }
       break;
   }

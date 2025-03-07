@@ -1044,7 +1044,7 @@ class GetChatScheduledMessagesRequest final : public RequestActor<> {
 
 class GetWebPageInstantViewRequest final : public RequestActor<WebPageId> {
   string url_;
-  bool force_full_;
+  bool only_local_;
 
   WebPageId web_page_id_;
 
@@ -1053,7 +1053,7 @@ class GetWebPageInstantViewRequest final : public RequestActor<WebPageId> {
       promise.set_value(std::move(web_page_id_));
       return;
     }
-    td_->web_pages_manager_->get_web_page_instant_view(url_, force_full_, std::move(promise));
+    td_->web_pages_manager_->get_web_page_instant_view(url_, only_local_, std::move(promise));
   }
 
   void do_set_result(WebPageId &&result) final {
@@ -1065,8 +1065,8 @@ class GetWebPageInstantViewRequest final : public RequestActor<WebPageId> {
   }
 
  public:
-  GetWebPageInstantViewRequest(ActorShared<Td> td, uint64 request_id, string url, bool force_full)
-      : RequestActor(std::move(td), request_id), url_(std::move(url)), force_full_(force_full) {
+  GetWebPageInstantViewRequest(ActorShared<Td> td, uint64 request_id, string url, bool only_local)
+      : RequestActor(std::move(td), request_id), url_(std::move(url)), only_local_(only_local) {
   }
 };
 
@@ -4147,8 +4147,9 @@ void Requests::on_request(uint64 id, const td_api::sendQuickReplyShortcutMessage
 
 void Requests::on_request(uint64 id, td_api::resendMessages &request) {
   DialogId dialog_id(request.chat_id_);
-  auto r_message_ids = td_->messages_manager_->resend_messages(
-      dialog_id, MessageId::get_message_ids(request.message_ids_), std::move(request.quote_));
+  auto r_message_ids =
+      td_->messages_manager_->resend_messages(dialog_id, MessageId::get_message_ids(request.message_ids_),
+                                              std::move(request.quote_), request.paid_message_star_count_);
   if (r_message_ids.is_error()) {
     return send_closure(td_actor_, &Td::send_error, id, r_message_ids.move_as_error());
   }
@@ -4167,7 +4168,7 @@ void Requests::on_request(uint64 id, td_api::getLinkPreview &request) {
 void Requests::on_request(uint64 id, td_api::getWebPageInstantView &request) {
   CHECK_IS_USER();
   CLEAN_INPUT_STRING(request.url_);
-  CREATE_REQUEST(GetWebPageInstantViewRequest, std::move(request.url_), request.force_full_);
+  CREATE_REQUEST(GetWebPageInstantViewRequest, std::move(request.url_), request.only_local_);
 }
 
 void Requests::on_request(uint64 id, const td_api::createPrivateChat &request) {
@@ -4354,7 +4355,8 @@ void Requests::on_request(uint64 id, td_api::joinGroupCall &request) {
                      get_message_sender_dialog_id(td_, request.participant_id_, true, true));
   td_->group_call_manager_->join_group_call(GroupCallId(request.group_call_id_), join_as_dialog_id,
                                             request.audio_source_id_, std::move(request.payload_), request.is_muted_,
-                                            request.is_my_video_enabled_, request.invite_hash_, std::move(promise));
+                                            request.is_my_video_enabled_, request.invite_hash_,
+                                            request.key_fingerprint_, std::move(promise));
 }
 
 void Requests::on_request(uint64 id, td_api::startGroupCallScreenSharing &request) {
@@ -4736,6 +4738,25 @@ void Requests::on_request(uint64 id, td_api::setNewChatPrivacySettings &request)
   CREATE_OK_REQUEST_PROMISE();
   GlobalPrivacySettings::set_global_privacy_settings(td_, GlobalPrivacySettings(std::move(request.settings_)),
                                                      std::move(promise));
+}
+
+void Requests::on_request(uint64 id, const td_api::getPaidMessageRevenue &request) {
+  CHECK_IS_USER();
+  CREATE_REQUEST_PROMISE();
+  td_->star_manager_->get_paid_message_revenue(UserId(request.user_id_), std::move(promise));
+}
+
+void Requests::on_request(uint64 id, const td_api::allowUnpaidMessagesFromUser &request) {
+  CHECK_IS_USER();
+  CREATE_OK_REQUEST_PROMISE();
+  td_->privacy_manager_->allow_unpaid_messages(UserId(request.user_id_), request.refund_payments_, std::move(promise));
+}
+
+void Requests::on_request(uint64 id, const td_api::setChatPaidMessageStarCount &request) {
+  CHECK_IS_USER();
+  CREATE_OK_REQUEST_PROMISE();
+  td_->chat_manager_->set_channel_send_paid_messages_star_count(DialogId(request.chat_id_),
+                                                                request.paid_message_star_count_, std::move(promise));
 }
 
 void Requests::on_request(uint64 id, const td_api::canSendMessageToUser &request) {
@@ -7159,6 +7180,17 @@ void Requests::on_request(uint64 id, const td_api::toggleGiftIsSaved &request) {
   td_->star_gift_manager_->save_gift(StarGiftId(request.received_gift_id_), request.is_saved_, std::move(promise));
 }
 
+void Requests::on_request(uint64 id, const td_api::setPinnedGifts &request) {
+  CHECK_IS_USER();
+  CREATE_OK_REQUEST_PROMISE();
+  TRY_RESULT_PROMISE(promise, owner_dialog_id, get_message_sender_dialog_id(td_, request.owner_id_, true, false));
+  td_->star_gift_manager_->set_dialog_pinned_gifts(
+      owner_dialog_id,
+      transform(request.received_gift_ids_,
+                [](const string &received_gift_id) { return StarGiftId(received_gift_id); }),
+      std::move(promise));
+}
+
 void Requests::on_request(uint64 id, const td_api::toggleChatGiftNotifications &request) {
   CHECK_IS_USER();
   CREATE_OK_REQUEST_PROMISE();
@@ -7524,10 +7556,16 @@ void Requests::on_request(uint64 id, const td_api::getPremiumState &request) {
   get_premium_state(td_, std::move(promise));
 }
 
-void Requests::on_request(uint64 id, const td_api::getPremiumGiftCodePaymentOptions &request) {
+void Requests::on_request(uint64 id, const td_api::getPremiumGiftPaymentOptions &request) {
   CHECK_IS_USER();
   CREATE_REQUEST_PROMISE();
-  get_premium_gift_code_options(td_, DialogId(request.boosted_chat_id_), std::move(promise));
+  get_premium_gift_payment_options(td_, std::move(promise));
+}
+
+void Requests::on_request(uint64 id, const td_api::getPremiumGiveawayPaymentOptions &request) {
+  CHECK_IS_USER();
+  CREATE_REQUEST_PROMISE();
+  get_premium_giveaway_options(td_, DialogId(request.boosted_chat_id_), std::move(promise));
 }
 
 void Requests::on_request(uint64 id, td_api::checkPremiumGiftCode &request) {
