@@ -273,6 +273,8 @@ class Requests {
 
   void on_request(uint64 id, const td_api::getMessageViewers &request);
 
+  void on_request(uint64 id, const td_api::getMessageAuthor &request);
+
   void on_request(uint64 id, const td_api::getMessages &request);
 
   void on_request(uint64 id, const td_api::getMessageProperties &request);
@@ -290,6 +292,14 @@ class Requests {
   void on_request(uint64 id, const td_api::openSponsoredChat &request);
 
   void on_request(uint64 id, const td_api::reportSponsoredChat &request);
+
+  void on_request(uint64 id, const td_api::getVideoMessageAdvertisements &request);
+
+  void on_request(uint64 id, const td_api::viewVideoMessageAdvertisement &request);
+
+  void on_request(uint64 id, const td_api::clickVideoMessageAdvertisement &request);
+
+  void on_request(uint64 id, const td_api::reportVideoMessageAdvertisement &request);
 
   void on_request(uint64 id, const td_api::getMessageLink &request);
 
@@ -356,6 +366,30 @@ class Requests {
   void on_request(uint64 id, const td_api::loadChats &request);
 
   void on_request(uint64 id, const td_api::getChats &request);
+
+  void on_request(uint64 id, const td_api::loadDirectMessagesChatTopics &request);
+
+  void on_request(uint64 id, const td_api::getDirectMessagesChatTopic &request);
+
+  void on_request(uint64 id, const td_api::getDirectMessagesChatTopicHistory &request);
+
+  void on_request(uint64 id, const td_api::getDirectMessagesChatTopicMessageByDate &request);
+
+  void on_request(uint64 id, const td_api::deleteDirectMessagesChatTopicHistory &request);
+
+  void on_request(uint64 id, const td_api::deleteDirectMessagesChatTopicMessagesByDate &request);
+
+  void on_request(uint64 id, const td_api::setDirectMessagesChatTopicIsMarkedAsUnread &request);
+
+  void on_request(uint64 id, td_api::setDirectMessagesChatTopicDraftMessage &request);
+
+  void on_request(uint64 id, const td_api::unpinAllDirectMessagesChatTopicMessages &request);
+
+  void on_request(uint64 id, const td_api::readAllDirectMessagesChatTopicReactions &request);
+
+  void on_request(uint64 id, const td_api::getDirectMessagesChatTopicRevenue &request);
+
+  void on_request(uint64 id, const td_api::toggleDirectMessagesChatTopicCanSendUnpaidMessages &request);
 
   void on_request(uint64 id, const td_api::loadSavedMessagesTopics &request);
 
@@ -545,6 +579,8 @@ class Requests {
 
   void on_request(uint64 id, td_api::editMessageLiveLocation &request);
 
+  void on_request(uint64 id, td_api::editMessageChecklist &request);
+
   void on_request(uint64 id, td_api::editMessageMedia &request);
 
   void on_request(uint64 id, td_api::editMessageCaption &request);
@@ -572,6 +608,8 @@ class Requests {
   void on_request(uint64 id, td_api::editBusinessMessageText &request);
 
   void on_request(uint64 id, td_api::editBusinessMessageLiveLocation &request);
+
+  void on_request(uint64 id, td_api::editBusinessMessageChecklist &request);
 
   void on_request(uint64 id, td_api::editBusinessMessageMedia &request);
 
@@ -957,6 +995,8 @@ class Requests {
 
   void on_request(uint64 id, const td_api::setChatDiscussionGroup &request);
 
+  void on_request(uint64 id, const td_api::setChatDirectMessagesGroup &request);
+
   void on_request(uint64 id, td_api::setChatLocation &request);
 
   void on_request(uint64 id, const td_api::setChatSlowModeDelay &request);
@@ -1014,6 +1054,12 @@ class Requests {
   void on_request(uint64 id, const td_api::processChatJoinRequest &request);
 
   void on_request(uint64 id, td_api::processChatJoinRequests &request);
+
+  void on_request(uint64 id, const td_api::approveSuggestedPost &request);
+
+  void on_request(uint64 id, td_api::declineSuggestedPost &request);
+
+  void on_request(uint64 id, td_api::addOffer &request);
 
   void on_request(uint64 id, td_api::revokeChatInviteLink &request);
 
@@ -1427,7 +1473,9 @@ class Requests {
 
   void on_request(uint64 id, const td_api::getChatRevenueWithdrawalUrl &request);
 
-  void on_request(uint64 id, const td_api::getChatRevenueTransactions &request);
+  void on_request(uint64 id, td_api::getChatRevenueTransactions &request);
+
+  void on_request(uint64 id, td_api::getTonTransactions &request);
 
   void on_request(uint64 id, const td_api::getStarRevenueStatistics &request);
 
@@ -1470,6 +1518,10 @@ class Requests {
   void on_request(uint64 id, const td_api::getPollVoters &request);
 
   void on_request(uint64 id, td_api::stopPoll &request);
+
+  void on_request(uint64 id, td_api::addChecklistTasks &request);
+
+  void on_request(uint64 id, td_api::markChecklistTasksAsDone &request);
 
   void on_request(uint64 id, td_api::hideSuggestedAction &request);
 

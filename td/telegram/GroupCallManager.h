@@ -139,7 +139,8 @@ class GroupCallManager final : public Actor {
                                    bool use_portrait_orientation, Promise<Unit> &&promise);
 
   void set_group_call_participant_is_speaking(GroupCallId group_call_id, int32 audio_source, bool is_speaking,
-                                              Promise<Unit> &&promise, int32 date = 0);
+                                              Promise<td_api::object_ptr<td_api::MessageSender>> &&promise,
+                                              int32 date = 0);
 
   void toggle_group_call_participant_is_muted(GroupCallId group_call_id, DialogId dialog_id, bool is_muted,
                                               Promise<Unit> &&promise);
@@ -436,6 +437,8 @@ class GroupCallManager final : public Actor {
 
   void on_toggle_group_call_participant_is_hand_raised(InputGroupCallId input_group_call_id, DialogId dialog_id,
                                                        uint64 generation, Promise<Unit> &&promise);
+
+  void clear_group_call(GroupCall *group_call);
 
   void on_group_call_left(InputGroupCallId input_group_call_id, int32 audio_source, bool need_rejoin);
 

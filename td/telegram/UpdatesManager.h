@@ -564,6 +564,10 @@ class UpdatesManager final : public Actor {
   void on_update(tl_object_ptr<telegram_api::updateReadChannelDiscussionInbox> update, Promise<Unit> &&promise);
   void on_update(tl_object_ptr<telegram_api::updateReadChannelDiscussionOutbox> update, Promise<Unit> &&promise);
 
+  void on_update(tl_object_ptr<telegram_api::updateReadMonoForumInbox> update, Promise<Unit> &&promise);
+  void on_update(tl_object_ptr<telegram_api::updateReadMonoForumOutbox> update, Promise<Unit> &&promise);
+  void on_update(tl_object_ptr<telegram_api::updateMonoForumNoPaidException> update, Promise<Unit> &&promise);
+
   void on_update(tl_object_ptr<telegram_api::updateChannelPinnedTopic> update, Promise<Unit> &&promise);
   void on_update(tl_object_ptr<telegram_api::updateChannelPinnedTopics> update, Promise<Unit> &&promise);
 
@@ -697,8 +701,6 @@ class UpdatesManager final : public Actor {
   void on_update(tl_object_ptr<telegram_api::updateBotEditBusinessMessage> update, Promise<Unit> &&promise);
 
   void on_update(tl_object_ptr<telegram_api::updateBotDeleteBusinessMessage> update, Promise<Unit> &&promise);
-
-  void on_update(tl_object_ptr<telegram_api::updateBroadcastRevenueTransactions> update, Promise<Unit> &&promise);
 
   void on_update(tl_object_ptr<telegram_api::updateStarsBalance> update, Promise<Unit> &&promise);
 
